@@ -50,7 +50,8 @@
                 if (this.column.render) {
                     const $parent = this.context;
                     const template = this.column.render(this.row, this.column, this.index);
-                    const cell = document.createElement('div');
+					const $ajaxTable = this.$parent.$parent.$parent;
+					const cell = document.createElement('div');
                     cell.innerHTML = template;
 
                     this.$el.innerHTML = '';
@@ -68,8 +69,9 @@
                         staticRenderFns: res.staticRenderFns,
                         methods: methods,
                         data () {
-                            return $parent._data;
-                        }
+							return Object.assign({ajaxTableVM:$ajaxTable,contextVM:$parent}, $parent._data);
+
+						}
                     });
                     component.row = this.row;
                     component.column = this.column;

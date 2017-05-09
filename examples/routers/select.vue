@@ -1,23 +1,25 @@
 <template>
-    <div style="width: 200px;margin: 100px;">
-        <i-select v-model="model" filterable remote :remote-method="remoteMethod" :loading="loading" clearable style="width:200px">
-            <i-option v-for="option in options" :value="option.value" :key="option">{{option.label}}</i-option>
-        </i-select>
-        <!--<Button @click="handleAdd">+</Button>-->
-    </div>
+    <Row>
+        <i-col span="4">{{model}}</i-col>
+        <i-col span="8">
+            <i-select v-model="model" @input="handleInput" multiple filterable remote :remote-method="remoteMethod" :loading="loading" clearable>
+                <i-option v-for="option in options" :value="option.value" :key="new Date()">{{option.label}}</i-option>
+            </i-select>
+        </i-col>
+    </Row>
 </template>
 
 <script>
     export default {
         data () {
             return {
-                model: '',
+                model: [],
                 options: [
 
                 ],
                 list: [],
                 loading: false,
-                states: ["Alabama", "Alaska", "Arizona",
+                states: ["Al", "Alabama", "Alaska", "Arizona",
                     "Arkansas", "California", "Colorado",
                     "Connecticut", "Delaware", "Florida",
                     "Georgia", "Hawaii", "Idaho", "Illinois",
@@ -80,10 +82,13 @@
                             return item.label.toLowerCase()
                                     .indexOf(query.toLowerCase()) > -1;
                         });
-                    }, 200);
+                    }, 500);
                 } else {
                     this.options = [];
                 }
+            },
+            handleInput () {
+//                console.log(1)
             }
         },
         mounted () {

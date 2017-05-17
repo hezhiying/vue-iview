@@ -26,7 +26,7 @@
         </div>
         <transition :name="transitionName">
             <Drop v-show="dropVisible" :placement="placement" ref="dropdown">
-                <ul v-show="(notFound && !remote) || (remote && !loading && !options.length)" :class="[prefixCls + '-not-found']"><li>{{ localeNotFoundText }}</li></ul>
+                <ul v-show="notFountShow" :class="[prefixCls + '-not-found']"><li>{{ localeNotFoundText }}</li></ul>
                 <ul v-show="(!notFound && !remote) || (remote && !loading && !notFound)" :class="[prefixCls + '-dropdown-list']"><slot></slot></ul>
                 <ul v-show="loading" :class="[prefixCls + '-loading']">{{ localeLoadingText }}</ul>
             </Drop>
@@ -118,6 +118,7 @@
                 selectedMultiple: [],
                 focusIndex: 0,
                 query: '',
+                lastQuery: '',
                 selectToChangeQuery: false,    // when select an option, set this first and set query, because query is watching, it will emit event
                 inputLength: 20,
                 notFound: false,
@@ -196,8 +197,13 @@
             },
             dropVisible () {
                 let status = true;
-                if (!this.loading && this.remote && this.query === '' && !this.options.length) status = false;
+                const options = this.$slots.default || [];
+                if (!this.loading && this.remote && this.query === '' && !options.length) status = false;
                 return this.visible && status;
+            },
+            notFountShow () {
+                const options = this.$slots.default || [];
+                return (this.notFound && !this.remote) || (this.remote && !this.loading && !options.length);
             }
         },
         methods: {
@@ -214,18 +220,12 @@
             },
             // find option component
             findChild (cb) {
-                const _this = this;
                 const find = function (child) {
                     const name = child.$options.componentName;
 
                     if (name) {
                         cb(child);
                     } else if (child.$children.length) {
-                        _this.$nextTick(() => {
-//                            child.$children.forEach((innerChild) => {
-//                                find(innerChild, cb);
-//                            });
-                        });
                         child.$children.forEach((innerChild) => {
                             find(innerChild, cb);
                         });
@@ -529,10 +529,10 @@
                                     this.query = child.label === undefined ? child.searchLabel : child.label;
                                 }
                             });
-                            // 如果删除了搜索词，下拉列表也情况了，所以强制调用一次remoteMethod
-                            if (this.remote) {
+                            // 如果删除了搜索词，下拉列表也清空了，所以强制调用一次remoteMethod
+                            if (this.remote && this.query !== this.lastQuery) {
                                 this.$nextTick(() => {
-                                    this.query = model;
+                                    this.query = this.lastQuery;
                                 });
                             }
                         } else {
@@ -599,7 +599,7 @@
                     });
                 } else {
                     this.findChild(child => {
-                        child.selected = this.model.indexOf(child.value) > -1;
+                        child.selected = this.multiple ? this.model.indexOf(child.value) > -1 : this.model === child.value;
                     });
                 }
                 this.slotChange();
@@ -613,7 +613,7 @@
                     });
                 } else {
                     this.findChild(child => {
-                        child.selected = this.model.indexOf(child.value) > -1;
+                        child.selected = this.multiple ? this.model.indexOf(child.value) > -1 : this.model === child.value;
                     });
                 }
                 this.slotChange();
@@ -646,7 +646,7 @@
                             this.findChild((child) => {
                                 if (child.value === value) {
                                     if (this.query !== '') this.selectToChangeQuery = true;
-                                    this.query = child.label === undefined ? child.searchLabel : child.label;
+                                    this.lastQuery = this.query = child.label === undefined ? child.searchLabel : child.label;
                                 }
                             });
                         }
@@ -685,7 +685,7 @@
                         }
                         if (this.remote) {
                             this.findChild(child => {
-                                child.selected = this.model.indexOf(child.value) > -1;
+                                child.selected = this.multiple ? this.model.indexOf(child.value) > -1 : this.model === child.value;
                             });
                         }
                     }

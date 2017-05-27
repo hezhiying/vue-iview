@@ -155,6 +155,8 @@
                     if (!this.model.length) {
                         status = true;
                     }
+                } else if( this.model === null){
+                    status = true;
                 }
 
                 return status;
@@ -693,6 +695,12 @@
                     }
                 } else {
                     this.updateSingleSelected();
+                }
+                // #957
+                if (!this.visible && this.filterable) {
+                    this.$nextTick(() => {
+                        this.broadcastQuery('');
+                    });
                 }
             },
             visible (val) {
